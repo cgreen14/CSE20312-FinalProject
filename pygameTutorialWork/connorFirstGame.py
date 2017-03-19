@@ -3,6 +3,12 @@
 import pygame
 import math
 import sys
+import os
+
+try:
+	import pygame
+except:
+	os.system('pip install pygame')
 
 pygame.init()
 screen = pygame.display.set_mode((400,300))
