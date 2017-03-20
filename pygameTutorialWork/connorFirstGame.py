@@ -8,7 +8,11 @@ try:
 	import pygame
 except:
 	os.system('pip install pygame')
+<<<<<<< HEAD
+    	import pygame
+=======
 	import pygame
+>>>>>>> 7acec7c1d07bffee4d64bbbfd6c3d65636e00bbb
 
 pygame.init()
 screen = pygame.display.set_mode((400,300))
