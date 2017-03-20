@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.7
 
-import pygame
 import math
 import sys
 import os
