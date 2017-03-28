@@ -1,0 +1,65 @@
+# Progress Log
+
+Activity:
+------------------------------------------------------------------------------------------
+Wednesday, March 15: (2 Hours)
+To start the process of becoming familiar with pygame, I first needed to download the game.
+After going online, I learned that it was fairly easy to install pygame, for all I had to
+do was use the system command 'pip install pygame'. The difficulty here came from the fact
+that while this should have been simple, my computer didn't recognize the command pip. I
+tried running the command from inside the python interpreter, and that didn't work either.
+Because of this, my time here was spent trying to learn how to download pygame. Eventually
+I learned that my computer wasn't recognizing the command because it didn't HAVE pip. I had
+to first install pip in order to be able to install pygame. To do this, I used easy_install
+along with sudo to install pip. From there it was easy to install pygame as I just ran the
+command 'pip install pygame'.
+
+Thursday, March 16: (3.5 Hours)
+I spent this time researching pygame, going through the pygame doc on the pygame website, and
+going through online YouTube videos in order to better learn pygame. These tutorials online
+helped me gain a better understanding of how to initialize pygame in a program, how to set up
+a screen, how to change the color of the screen, how to load images into pygame, and how to
+display those images onto the screen.
+
+Wednesday, March 22: (2 Hours)
+I spent this time going further into pygame research, learning how to look for 'events' and the
+different types of events. I also learned how to pick those events up and to have the program
+respond based on those events. From this, I was able to load an image onto the screen, and then
+use the arrow keys to get that image to move around the screen.
+
+Sunday, March 26: (3 Hours)
+I spent this time developing an script, called defenseMap.py, that will most likely serve
+as the basis for our pygame Tower Defense game. This script loads an image, called level1Map.png,
+and uses it as the background image in this game. Displaying this image first guarentees that all
+images placed after it (towers, enemies, bases, etc.) will display on top of the background image.
+I also developed a matrix that will be used for the path of the enemies in our game.
+
+Script:
+------------------------------------------------------------------------------------------
+defenseMap.py
+
+User's Perspective:
+This program is a python script that essentially displays the map that will be used as the first
+level in our Tower Defense Game. In the terminal the user will be able to observe the matrix that
+will eventually be used to provide a walking path for the enemies, as well as appropriate areas to
+place towers to take down those enemies. A prompt is displayed on the pygame window that prompts
+the user to press 'g' to toggle the grid on and off.
+
+Programmer's Perspective:
+This program first imports the pygame module and os module. Then the program initializes everything
+pygame will need to start running with the command pygame.init(). Variables are set up that will
+be used later in the program, such as the size of the screen and booleans to keep loops iterating
+or to display certain images. After this, a matrix is declared and initialized through list
+comprehensions to set the groundwork for later progress in the program. This 15x20 matrix will
+eventually allow the path to be set for the enemies, as well as locations where the user will be
+able to place towers. This matrix is printed to stdout so that the user can view it. The main
+while loop is then entered, and the game constantly looks for key presses from the user and
+constantly prints to the screen the background image and text that prompts the user to press 'g',
+which toggles the grid on/off. Pressing 'g' sets a boolean value to True, which then has the program
+enter an if statement which displays lines that show a grid on top of the background image. At the
+end, the command pygame.display.flip() is used which makes sure everything is drawn correctly to the
+screen.
+
+Program Verification:
+This program works exactly as intended. Pressing 'g' toggles the grid, and pressing 'q' or quitting
+the screen through the top close bottom on the screen ends the program.
