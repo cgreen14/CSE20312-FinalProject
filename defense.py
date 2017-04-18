@@ -13,7 +13,7 @@ except:
 #Initialize Variables
 scrWidth = 800
 scrHeight = 600
-FPS = 30
+FPS = 60
 green = (0,200,0)
 
 #Set Up Pygame window
@@ -48,7 +48,7 @@ def runAlongTrack(x,y):
 		x+=speed
 	elif(x < 500 and y > 260):
 		y-=speed
-	elif(x < 760):
+	else:
 		x+=speed
 	return x,y
 
@@ -81,27 +81,31 @@ myfont=pygame.font.SysFont("Britannic Bold", 40)
 nlabel=myfont.render("Welcome: Click 'b' to start setting up the map", 1, (255, 0, 0))
 gameDisplay.blit(nlabel,(75,200))
 pygame.display.flip()
-while(1):
+quit = True
+while(quit):
 	for event in pygame.event.get():  #next week work to update this to take into account pressed keys
-		if event.type == pygame.QUIT:
-			sys.exit()
 		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_q:
+				quit = False
 			if event.key == pygame.K_b:
 					gameDisplay.fill((0, 0, 0))
 					gameDisplay.blit(level1Map, level1MapRect)
 					pygame.display.update()
 					clock.tick(FPS)
 					pygame.display.flip()
+
 			if event.key == pygame.K_s:
+				count = 0
+				while(count < 100):
 					x,y = runAlongTrack(x,y)
 					gameDisplay.fill((0, 0, 0))
 					gameDisplay.blit(level1Map, level1MapRect)
-					# this would be the place to check for valid tank movement, would need to check
-					# before making the change then revert
+					
 					tankDraw(x,y)
 					drawTower(40,80)
 					pygame.display.update()
 					clock.tick(FPS)
 					pygame.display.flip()
+					count += 1
 
 pygame.quit()
