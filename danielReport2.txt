@@ -1,0 +1,19 @@
+# Progress Log
+
+Activity:
+------------------------------------------------------------------------------------------
+Thursday, April 13: (2 Hours)
+Brain-stormed how to best implement the different types of enemies on the map. I came up with the
+idea that the game should have an abstract class (or Python's equivalent of an abstract class) for
+the base Enemy class. Each different enemy would then inherit from this base Enemy class. Different
+enemies of the same 'niche' (same enemy, maybe an upgraded version) will inherit further from this
+inherited enemy class.
+
+Saturday, April 15: (4 Hours)
+Tried to figure out how to best make an enemy follow a path, or decide to follow a path, to get to
+the dedicated location on the map where they can inflict damage on your home base. I had to decide
+whether enemies should follow a fixed path, or whether they should move randomly and simply implement
+collision detection into the map. My idea was that the most efficient way to implement enemies
+following a path would be to simply pre-program the path into the enemies. This way, the user would
+also get the best experience playing the game, for they would be able to best know where to place
+their towers.
