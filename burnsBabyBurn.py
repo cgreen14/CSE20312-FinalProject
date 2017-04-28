@@ -139,6 +139,10 @@ gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 gameDisplay.blit(backgroundImg, backgroundImgRect)
 baseTower = Base()
 bases.add(baseTower)
+
+#############
+# Play Game #
+#############
 while gameContinue:
 	clock.tick(FPS)
 	print len(enemies.sprites())
