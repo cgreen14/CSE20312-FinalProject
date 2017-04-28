@@ -27,7 +27,7 @@ gameContinue = True
 ##########
 # Images
 backgroundImg = pygame.image.load("level1Map.png")
-enemyBoardImg = pygame.image.load("EnemyBoard.png")
+towerBoardImg = pygame.image.load("towerBoard.png")
 tank1Img = pygame.image.load("tank1.png")
 tank2Img = pygame.image.load("tank2.png")
 tank3Img = pygame.image.load("tank3.png")
@@ -36,10 +36,10 @@ tower1Img = pygame.image.load("tower1.png")
 # Transformation
 backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
-enemyBoardImg = pygame.transform.scale(enemyBoardImg, (enemyBoardImg.get_width() / 3, enemyBoardImg.get_height() / 3))
-enemyBoardImgRect = enemyBoardImg.get_rect()
-enemyBoardImgRect.bottom = scrHeight
-enemyBoardImgRect.right = scrWidth
+towerBoardImg = pygame.transform.scale(towerBoardImg, (towerBoardImg.get_width() / 3, towerBoardImg.get_height() / 3))
+towerBoardImgRect = towerBoardImg.get_rect()
+towerBoardImgRect.bottom = scrHeight
+towerBoardImgRect.right = scrWidth
 tank1Img = pygame.transform.scale(tank1Img, (tank1Img.get_width() / 3, tank1Img.get_height() / 3))
 tank1Img = pygame.transform.rotate(tank1Img, -90)
 tank2Img = pygame.transform.scale(tank2Img, (tank2Img.get_width() / 3, tank2Img.get_height() / 3))
@@ -138,9 +138,13 @@ class Tower(pygame.sprite.Sprite):
 		self.attackRange = 100
 		self.target = None
 		self.closestTargetRange = 800
+		self.coolDown = time.time()
 	def update(self):
+		if self.target is None: self.coolDown = time.time()
 		self.spotEnemy()
-		self.attackEnemy()
+		if time.time() - self.coolDown > 1:
+			self.coolDown = time.time()
+			self.attackEnemy()
 	def spotEnemy(self):
 		self.target = None
 		for enemy in enemies.sprites():
@@ -148,10 +152,14 @@ class Tower(pygame.sprite.Sprite):
 			if distance <= self.attackRange and distance < self.closestTargetRange:
 				self.target = enemy
 				self.closestTargetRange = distance
+				gameDisplay.blit(backgroundImg, backgroundImgRect)
+				gameDisplay.blit(towerBoardImg, towerBoardImgRect)
+				towers.draw(gameDisplay)
+				pygame.draw.line(gameDisplay, blue, self.rect.midbottom, self.target.rect.center, 3)
 		self.closestTargetRange = 800
 	def attackEnemy(self):
 		if self.target is not None:
-			self.target.damage(3)
+			self.target.damage(50)
 
 ##########
 # Groups #
@@ -168,7 +176,7 @@ pygame.display.set_caption("Tower Defense")
 clock = pygame.time.Clock()
 gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 gameDisplay.blit(backgroundImg, backgroundImgRect)
-gameDisplay.blit(enemyBoardImg, enemyBoardImgRect)
+gameDisplay.blit(towerBoardImg, towerBoardImgRect)
 baseTower = Base()
 bases.add(baseTower)
 
@@ -176,7 +184,6 @@ bases.add(baseTower)
 # Play Game #
 #############
 towers.add(Tower(tower1Img, 330, 285))
-towers.add(Tower(tower1Img, 400, 285))
 towers.draw(gameDisplay)
 while gameContinue:
 	clock.tick(FPS)
@@ -189,14 +196,17 @@ while gameContinue:
 				gameContinue = False
 			if event.key == pygame.K_n:
 				enemies.add(Tank(tank1Img))
+	towers.update()
 	enemies.clear(gameDisplay, backgroundImg)
 	enemies.update()
 	bases.clear(gameDisplay, backgroundImg)
 	bases.update()
-	towers.update()
 	enemies.draw(gameDisplay)
 	bases.draw(gameDisplay)
 	pygame.display.update()
+	gameDisplay.blit(backgroundImg, backgroundImgRect)
+	gameDisplay.blit(towerBoardImg, towerBoardImgRect)
+	towers.draw(gameDisplay)
 	collisionWithBase = pygame.sprite.spritecollideany(baseTower, enemies)
 	if collisionWithBase != None:
 		baseTower.health -= 10
