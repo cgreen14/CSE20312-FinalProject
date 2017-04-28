@@ -3,6 +3,7 @@
 import sys
 import os
 import time
+
 #import pygame and install it if the system doesnt have it
 try:
 	import pygame
@@ -10,7 +11,9 @@ except:
 	os.system('pip install pygame')
 	import pygame
 
-#Initialize Variables
+######################
+#Initialize Variables#
+######################
 scrWidth = 800
 scrHeight = 600
 FPS = 30
@@ -19,7 +22,9 @@ red = (255, 0, 0)
 white = (255,255,255)
 black = (0,0,0)
 
-#Set Up Pygame window
+######################
+#Set Up Pygame window#
+######################
 pygame.init()
 pygame.display.set_caption('Tower Defense')
 clock = pygame.time.Clock()
@@ -27,9 +32,6 @@ gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 level1Map = pygame.image.load("level1Map.png")
 level1Map = pygame.transform.scale(level1Map, (scrWidth, scrHeight))
 level1MapRect = level1Map.get_rect()
-#Set Up Object to Move, we are inserting the image, fliping it and resizing it
-tankImg = pygame.transform.rotozoom(pygame.image.load('tank1.png'),270, 0.25)
-towerImg = pygame.transform.rotozoom(pygame.image.load('tower.png'),0, 0.3)
 #text
 myfont = pygame.font.SysFont("Britannic Bold", 40)
 myfont2 = pygame.font.SysFont("Britannic Bold", 20)
@@ -39,7 +41,6 @@ nlabellead = myfont.render("Leaders", 1, black)
 nlabeltower = myfont2.render("New Tower", 1, black)
 nlabeltowerc = myfont2.render("Cost: 200", 1, black)
 nlabelplay = myfont2.render("RUN", 1, black)
-
 
 def runAlongTrack(x,y):
 	speed = 10
