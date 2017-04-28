@@ -47,8 +47,37 @@ class Tank(pygame.sprite.Sprite):
 		self.velY = 0
 		self.heath = 100
 	def update(self):
-		self.rect.x += self.velX
-		self.rect.y += self.velY
+		if (self.rect.x < 110):
+			self.velX = 1
+			self.velY = 0
+		elif (self.rect.x < 150 and self.rect.y > 140):
+			self.velX = 0;
+			self.velY = -1;	
+		elif (self.rect.x < 280 and self.rect.y > 130):
+			self.velX = 1;
+			self.velY = 0;	
+		elif (self.rect.x < 300 and self.rect.y < 370):
+			self.velX = 0;
+			self.velY = 1;	
+		elif (self.rect.x < 485 and self.rect.y < 490):
+			self.velX = 1;
+			self.velY = 0;	
+		elif (self.rect.x < 500 and self.rect.y > 260):
+			self.velX = 0;
+			self.velY = -1;	
+		elif (self.rect.y >= 260):
+			self.velX = 1
+			self.velY = 0
+		elif (self.rect.x > 800){
+			
+		}
+
+		self.rect.x += 10*self.velX
+		self.rect.y += 10*self.velY
+		print 'x: ',
+		print self.rect.x
+		#print 'y: ',
+		#print self.rect.y
 
 ##########
 # Groups #
