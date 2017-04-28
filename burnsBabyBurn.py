@@ -29,7 +29,7 @@ backgroundImg = pygame.image.load("level1Map.png")
 tank1Img = pygame.image.load("tank1.png")
 tank2Img = pygame.image.load("tank2.png")
 tank3Img = pygame.image.load("tank3.png")
-baseImg = pygame.image.load("tower1.png")
+baseImg = pygame.image.load("base1.png")
 # Transformation
 backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
