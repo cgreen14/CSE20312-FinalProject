@@ -68,16 +68,8 @@ class Tank(pygame.sprite.Sprite):
 		elif (self.rect.y >= 260):
 			self.velX = 1
 			self.velY = 0
-		elif (self.rect.x > 800){
-			
-		}
-
 		self.rect.x += 10*self.velX
 		self.rect.y += 10*self.velY
-		print 'x: ',
-		print self.rect.x
-		#print 'y: ',
-		#print self.rect.y
 
 ##########
 # Groups #
@@ -89,7 +81,6 @@ enemies = pygame.sprite.Group()
 #############
 enemy1 = Tank(tank1Img)
 enemies.add(enemy1)
-print enemy1.groups()
 
 #################
 # Initiate Game *
@@ -98,6 +89,7 @@ pygame.init()
 pygame.display.set_caption("Tower Defense")
 clock = pygame.time.Clock()
 gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
+print enemies.sprites()
 
 while gameContinue:
 	clock.tick(FPS)
