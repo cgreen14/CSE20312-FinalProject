@@ -23,13 +23,16 @@ blue = (0, 0, 255)
 white = (255, 255, 255)
 black = (0, 0, 0)
 gameContinue = True
-waitForTowerPosition = False
+# Start up window
+pygame.init()
+pygame.display.set_caption("Tower Defense")
+clock = pygame.time.Clock()
+gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 
-
-##########
-# Images #
-##########
-# Images
+#################
+# Images/Labels #
+#################
+# Images/Labels
 backgroundImg = pygame.image.load("level1Map.png")
 towerBoardImg = pygame.image.load("towerBoard.png")
 tank1Img = pygame.image.load("tank1.png")
@@ -37,6 +40,7 @@ tank2Img = pygame.image.load("tank2.png")
 tank3Img = pygame.image.load("tank3.png")
 baseImg = pygame.image.load("base1.png")
 tower1Img = pygame.image.load("tower1.png")
+myFont = pygame.font.SysFont("Britannic Bold", 30)
 # Transformation
 backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
@@ -44,6 +48,8 @@ towerBoardImg = pygame.transform.scale(towerBoardImg, (towerBoardImg.get_width()
 towerBoardImgRect = towerBoardImg.get_rect()
 towerBoardImgRect.bottom = scrHeight
 towerBoardImgRect.right = scrWidth
+towerBoardInstructions1 = myFont.render("Click to select tower", 1, black)
+towerBoardInstructions2 = myFont.render("Click again to drop", 1, black)
 tank1Img = pygame.transform.scale(tank1Img, (tank1Img.get_width() / 3, tank1Img.get_height() / 3))
 tank1Img = pygame.transform.rotate(tank1Img, -90)
 tank2Img = pygame.transform.scale(tank2Img, (tank2Img.get_width() / 3, tank2Img.get_height() / 3))
@@ -51,13 +57,35 @@ tank2Img = pygame.transform.rotate(tank2Img, -90)
 baseImg = pygame.transform.scale(baseImg, (baseImg.get_width() / 4, baseImg.get_height() / 4))
 tower1Img = pygame.transform.scale(tower1Img, (tower1Img.get_width() / 9, tower1Img.get_height() / 9))
 tower1ImgRect = tower1Img.get_rect()
-tower1ImgRect.x = 585
-tower1ImgRect.y = 510
+tower1ImgRect.x = 590
+tower1ImgRect.y = 500
+tower1Cost = myFont.render("$200", 1, red)
 
 
 ###########
 # Classes #
 ###########
+class Money(pygame.sprite.Sprite):
+	def __init__(self):
+		super(Money, self).__init__()
+		self.cash = 500
+		self.myfont = pygame.font.SysFont("Britannic Bold", 60)
+		self.image = self.myfont.render("${}".format(str(self.cash)), 1, black)
+		self.rect = self.image.get_rect()
+		self.rect.x = 170
+		self.rect.y = 510
+	def update(self):
+		money.clear(gameDisplay, backgroundImg)
+		self.image = self.myfont.render("${}".format(str(self.cash)), 1, black)
+		self.rect = self.image.get_rect()
+		self.rect.x = 170
+		self.rect.y = 510
+	def decrementCash(self, intNum):
+		self.cash -= intNum
+	def incrementCash(self, intNum):
+		self.cash += intNum
+
+
 class Tank(pygame.sprite.Sprite):
 	def __init__(self, image):
 		super(Tank, self).__init__()
@@ -181,19 +209,23 @@ class Tower(pygame.sprite.Sprite):
 enemies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
 towers = pygame.sprite.Group()
+money = pygame.sprite.Group()
 
 
 #################
 # Initiate Game *
 #################
-pygame.init()
-pygame.display.set_caption("Tower Defense")
-clock = pygame.time.Clock()
-gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
+
 gameDisplay.blit(backgroundImg, backgroundImgRect)
 gameDisplay.blit(towerBoardImg, towerBoardImgRect)
+gameDisplay.blit(towerBoardInstructions1, (580, 450))
+gameDisplay.blit(towerBoardInstructions2, (590, 470))
 gameDisplay.blit(tower1Img, tower1ImgRect)
+gameDisplay.blit(tower1Cost, (580, 580))
 bases.add(Base())
+myMoney = Money()
+money.add(myMoney)
+money.draw(gameDisplay)
 
 
 #############
@@ -205,8 +237,14 @@ def placeTower(towerImage):
 		event = pygame.event.wait()
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			mousePosition = pygame.mouse.get_pos()
-			towers.add(Tower(towerImage, (mousePosition[0]-12, mousePosition[1]-65)))
-			towerPlaced = True
+			if myMoney.cash >= 200:
+				towers.add(Tower(towerImage, (mousePosition[0]-12, mousePosition[1]-65)))
+				myMoney.decrementCash(200)
+				money.update()
+				money.draw(gameDisplay)
+				towerPlaced = True
+			else:
+				towerPlaced = True
 
 
 #############
@@ -222,6 +260,16 @@ while gameContinue:
 				gameContinue = False
 			if event.key == pygame.K_n:
 				enemies.add(Tank(tank1Img))
+			if event.key == pygame.K_d:
+				myMoney.decrementCash(10)
+				money.clear(gameDisplay, backgroundImg)
+				money.update()
+				money.draw(gameDisplay)
+			if event.key == pygame.K_a:
+				myMoney.incrementCash(10)
+				money.clear(gameDisplay, backgroundImg)
+				money.update()
+				money.draw(gameDisplay)
 		if event.type == pygame.MOUSEBUTTONDOWN:
 				mousePosition = pygame.mouse.get_pos()
 				if tower1ImgRect.collidepoint(mousePosition) == True:
