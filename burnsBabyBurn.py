@@ -143,6 +143,10 @@ class Tank(pygame.sprite.Sprite):
 		self.rect.y += self.velY
 		if self.health <= 0:
 			enemies.clear(gameDisplay, backgroundImg)
+			myMoney.incrementCash(1)
+			money.clear(gameDisplay, backgroundImg)
+			money.update()
+			money.draw(gameDisplay)
 			self.kill()
 		else:
 			pygame.draw.line(gameDisplay, red, (self.rect.x, self.rect.y), \
