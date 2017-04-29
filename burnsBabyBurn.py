@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+
 ##################
 # Import Modules #
 ##################
@@ -8,6 +9,7 @@ import os
 import time
 import math
 import pygame
+
 
 ########################
 # Initialize Variables #
@@ -21,6 +23,8 @@ blue = (0, 0, 255)
 white = (255, 255, 255)
 black = (0, 0, 0)
 gameContinue = True
+waitForTowerPosition = False
+
 
 ##########
 # Images #
@@ -46,6 +50,10 @@ tank2Img = pygame.transform.scale(tank2Img, (tank2Img.get_width() / 3, tank2Img.
 tank2Img = pygame.transform.rotate(tank2Img, -90)
 baseImg = pygame.transform.scale(baseImg, (baseImg.get_width() / 4, baseImg.get_height() / 4))
 tower1Img = pygame.transform.scale(tower1Img, (tower1Img.get_width() / 9, tower1Img.get_height() / 9))
+tower1ImgRect = tower1Img.get_rect()
+tower1ImgRect.x = 585
+tower1ImgRect.y = 510
+
 
 ###########
 # Classes #
@@ -103,15 +111,20 @@ class Tank(pygame.sprite.Sprite):
 				self.angle = 0
 		else:
 			self.kill()
-		self.rect.x += 2*self.velX
-		self.rect.y += 2*self.velY
-		pygame.draw.line(gameDisplay, red, (self.rect.x, self.rect.y), \
-			(self.rect.x + self.health * .3, self.rect.y), 2)
+		self.rect.x += self.velX
+		self.rect.y += self.velY
 		if self.health <= 0:
 			enemies.clear(gameDisplay, backgroundImg)
 			self.kill()
+		else:
+			pygame.draw.line(gameDisplay, red, (self.rect.x, self.rect.y), \
+				(self.rect.x + self.health * .3, self.rect.y), 2)
 	def damage(self, hitNum):
 		self.health -= hitNum
+	def hitBase(self):
+		enemies.clear(gameDisplay, backgroundImg)
+		self.kill()
+
 
 class Base(pygame.sprite.Sprite):
 	def __init__(self):
@@ -122,14 +135,18 @@ class Base(pygame.sprite.Sprite):
 		self.rect.y = 194
 		self.health = 100
 	def update(self):
+		pygame.draw.line(gameDisplay, red, (self.rect.x + 2, self.rect.bottom - 2), \
+			((self.rect.x + self.health * .56), self.rect.bottom - 2), 2)
 		if self.health <= 0:
 			bases.clear(gameDisplay, backgroundImg)
 			self.kill()
-		pygame.draw.line(gameDisplay, red, (self.rect.x + 2, self.rect.bottom - 2), \
-			((self.rect.x + self.health * .6) - 2, self.rect.bottom - 2), 2)
+	def damage(self, hitNum):
+		self.health -= hitNum
+		self.update()
+
 
 class Tower(pygame.sprite.Sprite):
-	def __init__(self, image, xpos, ypos):
+	def __init__(self, image, (xpos, ypos)):
 		super(Tower, self).__init__()
 		self.image = image
 		self.rect = self.image.get_rect()
@@ -142,7 +159,7 @@ class Tower(pygame.sprite.Sprite):
 	def update(self):
 		if self.target is None: self.coolDown = time.time()
 		self.spotEnemy()
-		if time.time() - self.coolDown > 1:
+		if time.time() - self.coolDown > .5:
 			self.coolDown = time.time()
 			self.attackEnemy()
 	def spotEnemy(self):
@@ -152,14 +169,11 @@ class Tower(pygame.sprite.Sprite):
 			if distance <= self.attackRange and distance < self.closestTargetRange:
 				self.target = enemy
 				self.closestTargetRange = distance
-				gameDisplay.blit(backgroundImg, backgroundImgRect)
-				gameDisplay.blit(towerBoardImg, towerBoardImgRect)
-				towers.draw(gameDisplay)
-				pygame.draw.line(gameDisplay, blue, self.rect.midbottom, self.target.rect.center, 3)
 		self.closestTargetRange = 800
 	def attackEnemy(self):
 		if self.target is not None:
-			self.target.damage(50)
+			self.target.damage(30)
+
 
 ##########
 # Groups #
@@ -167,6 +181,7 @@ class Tower(pygame.sprite.Sprite):
 enemies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
 towers = pygame.sprite.Group()
+
 
 #################
 # Initiate Game *
@@ -177,17 +192,28 @@ clock = pygame.time.Clock()
 gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 gameDisplay.blit(backgroundImg, backgroundImgRect)
 gameDisplay.blit(towerBoardImg, towerBoardImgRect)
-baseTower = Base()
-bases.add(baseTower)
+gameDisplay.blit(tower1Img, tower1ImgRect)
+bases.add(Base())
+
+
+#############
+# Functions #
+#############
+def placeTower(towerImage):
+	towerPlaced = False
+	while not towerPlaced:
+		event = pygame.event.wait()
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			mousePosition = pygame.mouse.get_pos()
+			towers.add(Tower(towerImage, (mousePosition[0]-12, mousePosition[1]-65)))
+			towerPlaced = True
+
 
 #############
 # Play Game #
 #############
-towers.add(Tower(tower1Img, 330, 285))
-towers.draw(gameDisplay)
 while gameContinue:
 	clock.tick(FPS)
-	# print len(enemies.sprites())
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			gameContinue = False
@@ -196,23 +222,29 @@ while gameContinue:
 				gameContinue = False
 			if event.key == pygame.K_n:
 				enemies.add(Tank(tank1Img))
-	towers.update()
+		if event.type == pygame.MOUSEBUTTONDOWN:
+				mousePosition = pygame.mouse.get_pos()
+				if tower1ImgRect.collidepoint(mousePosition) == True:
+					placeTower(tower1Img)
+					
+	# clear groups
 	enemies.clear(gameDisplay, backgroundImg)
-	enemies.update()
 	bases.clear(gameDisplay, backgroundImg)
+	towers.clear(gameDisplay, backgroundImg)
+	# update groups
+	towers.update()
+	enemies.update()
 	bases.update()
+	# collision checks
+	if len(bases.sprites()) > 0:
+		collisionWithBase = pygame.sprite.spritecollideany(bases.sprites()[0], enemies)
+		if collisionWithBase != None:
+			bases.sprites()[0].damage(10)
+			collisionWithBase.hitBase()
+			if len(bases.sprites()) == 0:
+				gameContinue = False
+	# draw groups
 	enemies.draw(gameDisplay)
 	bases.draw(gameDisplay)
-	pygame.display.update()
-	gameDisplay.blit(backgroundImg, backgroundImgRect)
-	gameDisplay.blit(towerBoardImg, towerBoardImgRect)
 	towers.draw(gameDisplay)
-	collisionWithBase = pygame.sprite.spritecollideany(baseTower, enemies)
-	if collisionWithBase != None:
-		baseTower.health -= 10
-		bases.update()
-		enemies.clear(gameDisplay, backgroundImg)
-		enemies.draw(gameDisplay)
-		collisionWithBase.kill()
-		if len(bases.sprites()) == 0:
-			gameContinue = False
+	pygame.display.update()
