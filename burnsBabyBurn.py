@@ -14,6 +14,7 @@ from random import randint
 ########################
 # Initialize Variables #
 ########################
+# Variables
 scrWidth = 800
 scrHeight = 600
 FPS = 30
@@ -31,7 +32,6 @@ pygame.display.set_caption("Tower Defense")
 clock = pygame.time.Clock()
 gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 
-
 #################
 # Images/Labels #
 #################
@@ -48,8 +48,7 @@ levelFont = pygame.font.SysFont("Britannic Bold", 60)
 # Transformation
 backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
-towerBoardInstructions1 = myFont.render("Click to select tower", 1, black)
-towerBoardInstructions2 = myFont.render("Click again to drop", 1, black)
+towerBoardInstructions1 = myFont.render("Click and hold to select tower", 1, black)
 levelDisplay = levelFont.render("Level {}".format(level), 1, black)
 woodenBackImg = pygame.transform.scale(woodenBackImg, (scrWidth, scrHeight / 6))
 woodenBackImgRect = woodenBackImg.get_rect()
@@ -98,8 +97,7 @@ class Instructions(pygame.sprite.Sprite):
 		self.myfont = pygame.font.SysFont("Britannic Bold", 60)
 		self.image = self.myfont.render("Good luck!", 1, black)
 		self.rect = self.image.get_rect()
-		self.rect.x = 200
-		self.rect.y = 534
+		self.rect.center = (370, 554)
 	def dropInstructions(self, instructionsToPrint):
 		instructions.clear(gameDisplay, backgroundImg)
 		money.clear(gameDisplay, backgroundImg)
@@ -108,6 +106,8 @@ class Instructions(pygame.sprite.Sprite):
 		gameDisplay.blit(tower1Cost, (580, 580))
 		gameDisplay.blit(levelDisplay, (14, 510))
 		self.image = self.myfont.render(instructionsToPrint, 1, black)
+		self.rect = self.image.get_rect()
+		self.rect.center = (370, 554)
 		instructions.draw(gameDisplay)
 		money.draw(gameDisplay)
 
@@ -189,8 +189,8 @@ class Tank(pygame.sprite.Sprite):
 			if self.angle is not 0:
 				self.image = pygame.transform.rotate(self.image, -90)
 				self.angle = 0
-		self.rect.x += 2*(self.tankType * self.velX)
-		self.rect.y += 2*(self.tankType * self.velY)
+		self.rect.x += self.tankType * self.velX
+		self.rect.y += self.tankType * self.velY
 		if self.health <= 0:
 			enemies.clear(gameDisplay, backgroundImg)
 			myMoney.incrementCash(25)
@@ -256,6 +256,14 @@ class Tower(pygame.sprite.Sprite):
 			self.target.damage(30)
 
 
+######################
+# Initialize Classes #
+######################
+instruction = Instructions()
+levelTime = TimeUntilRoundStarts(15)
+myMoney = Money()
+
+
 ##########
 # Groups #
 ##########
@@ -271,19 +279,17 @@ roundTimes = pygame.sprite.Group()
 # Initiate Game *
 #################
 bases.add(Base())
-myMoney = Money()
+
 money.add(myMoney)
-instruction = Instructions()
 instructions.add(instruction)
 gameDisplay.blit(backgroundImg, backgroundImgRect)
 gameDisplay.blit(woodenBackImg, woodenBackImgRect)
-gameDisplay.blit(towerBoardInstructions1, (580, 470))
+gameDisplay.blit(towerBoardInstructions1, (504, 470))
 gameDisplay.blit(tower1Img, tower1ImgRect)
 gameDisplay.blit(tower1Cost, (580, 580))
 gameDisplay.blit(levelDisplay, (14, 510))
 money.draw(gameDisplay)
 instructions.draw(gameDisplay)
-levelTime = TimeUntilRoundStarts(15)
 roundTimes.add(levelTime)
 
 
@@ -302,28 +308,6 @@ def checkBounds(xpos, ypos):
 		or (ypos < 70):
 		return False
 	return True
-
-def placeTower(towerImage, cashRequired):
-	instruction.dropInstructions("Click to place")
-	pygame.display.update()
-	towerPlaced = False
-	while not towerPlaced:
-		event = pygame.event.wait()
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			mousePosition = pygame.mouse.get_pos()
-			if myMoney.cash >= cashRequired and checkBounds(mousePosition[0], mousePosition[1]):
-				towers.add(Tower(towerImage, (mousePosition[0]-12, mousePosition[1]-65)))
-				myMoney.decrementCash(cashRequired)
-				money.update()
-				money.draw(gameDisplay)
-				towerPlaced = True
-				instruction.dropInstructions("")
-			elif not checkBounds(mousePosition[0], mousePosition[1]):
-				towerPlaced = True
-				instruction.dropInstructions("Can't place there")
-			else:
-				towerPlaced = True
-				instruction.dropInstructions("Out of cash")
 
 def spawnEnemy():
 	tankType = randint(1, 3)
@@ -352,6 +336,7 @@ while gameContinue:
 		if levelTime.isTimeAtZero():
 			levelInProcess = True
 			roundTimes.clear(gameDisplay, backgroundImg)
+			instruction.dropInstructions("Level 1 Started!")
 
 	# spawn enemies based on level
 	if level == 1 and levelInProcess:
@@ -386,9 +371,7 @@ while gameContinue:
 				mousePosition = pygame.mouse.get_pos()
 				if tower1ImgRect.collidepoint(mousePosition) == True:
 					towerSelected = True
-					instruction.dropInstructions("Click to place")
-					#towerTypeSelcted = 1
-					#placeTower(tower1Img, 200)
+					instruction.dropInstructions("Release to place")
 		# place tower
 		if event.type == pygame.MOUSEBUTTONUP and towerSelected:
 				mousePosition = pygame.mouse.get_pos()
