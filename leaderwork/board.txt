@@ -1,9 +1,5 @@
-RJG,750
-CGG,450
-DBB,1000
-SWH,500
-XXX,0
-XXX,0
-XXX,0
-XXX,0
-XXX,0
+empty0,0
+empty1,0
+empty2,0
+empty3,0
+empty4,0

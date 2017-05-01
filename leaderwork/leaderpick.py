@@ -15,6 +15,9 @@ green = (0, 255, 0)
 blue = (0, 0, 255)
 white = (255, 255, 255)
 black = (0, 0, 0)
+yellow = (200, 200, 0)
+orange = (255, 165 ,0 )
+colorlist = [green, blue, white, yellow, orange]
 filen = 'board.txt'
 ycords = [0.3, 0.4, 0.5, 0.6, 0.7]
 
@@ -55,18 +58,20 @@ while leader:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
 			leader = False
-	gameDisplay.fill((0,0,0))
+	gameDisplay.fill(black)
 	gameDisplay.blit(nameLabel, (scrWidth*0.30, scrHeight*0.20))
 	gameDisplay.blit(scoreLabel, (scrWidth*0.55, scrHeight*0.20))
 	for i,s in enumerate(sortScore):
 		if scores[s] == "0":
-			userLabel = namefont.render("XXX", 1, red)
-			ypos = scrHeight*ycords[i]
-			gameDisplay.blit(userLabel, (scrWidth*0.31, ypos))
+			userLabel = namefont.render("XXX", 1, colorlist[i])
+			gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
+			scoreL = namefont.render(scores[s], 1, colorlist[i])
+			gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
 		else:
-			userLabel = namefont.render(s, 1, red)
-			ypos = scrHeight*ycords[i]
-			gameDisplay.blit(userLabel, (scrWidth*0.31, ypos))
+			userLabel = namefont.render(s, 1, colorlist[i])
+			gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
+			scoreL = namefont.render(scores[s], 1, colorlist[i])
+			gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
 
 
 	pygame.display.flip()
