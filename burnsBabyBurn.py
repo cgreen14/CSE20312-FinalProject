@@ -99,13 +99,14 @@ class Instructions(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = (370, 554)
 	def dropInstructions(self, instructionsToPrint):
+		self.instructionsToPrint = instructionsToPrint
 		instructions.clear(gameDisplay, backgroundImg)
 		money.clear(gameDisplay, backgroundImg)
 		gameDisplay.blit(woodenBackImg, woodenBackImgRect)
 		gameDisplay.blit(tower1Img, tower1ImgRect)
 		gameDisplay.blit(tower1Cost, (580, 580))
 		gameDisplay.blit(levelDisplay, (14, 510))
-		self.image = self.myfont.render(instructionsToPrint, 1, black)
+		self.image = self.myfont.render(self.instructionsToPrint, 1, black)
 		self.rect = self.image.get_rect()
 		self.rect.center = (370, 554)
 		instructions.draw(gameDisplay)
@@ -253,7 +254,7 @@ class Tower(pygame.sprite.Sprite):
 		self.closestTargetRange = 800
 	def attackEnemy(self):
 		if self.target is not None:
-			self.target.damage(30)
+			self.target.damage(10)
 
 
 ######################
@@ -327,6 +328,7 @@ enemiesLeftInLevel = 5
 enemySpawnTime = time.time()
 roundStartTime = time.time()
 roundTimes.draw(gameDisplay)
+levelDisplayDuration = time.time()
 while gameContinue:
 	clock.tick(FPS)
 	# update timer
@@ -336,20 +338,40 @@ while gameContinue:
 		if levelTime.isTimeAtZero():
 			levelInProcess = True
 			roundTimes.clear(gameDisplay, backgroundImg)
-			instruction.dropInstructions("Level 1 Started!")
+			instruction.dropInstructions("Level {} Started!".format(level))
+			levelDisplayDuration = time.time()
+			enemySpawnTime = time.time()
 
 	# spawn enemies based on level
-	if level == 1 and levelInProcess:
-		if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
-			enemySpawnTime = time.time()
-			enemiesLeftInLevel -= 1
-			spawnEnemy()
-		if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
-			#level += 1
-			roundStartTime = time.time()
-			levelDisplay = levelFont.render("Level {}".format(level), 1, black)
-			money.update()
-			levelInProcess = False
+	if levelInProcess:
+		if len(instruction.instructionsToPrint) > 0 and instruction.instructionsToPrint[0] == "L" \
+			and time.time() - levelDisplayDuration > 4:
+			instruction.dropInstructions("")
+		if level == 1:
+			if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
+				enemySpawnTime = time.time()
+				enemiesLeftInLevel -= 1
+				spawnEnemy()
+			if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
+				level += 1
+				roundStartTime = time.time()
+				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
+				money.update()
+				levelInProcess = False
+				enemiesLeftInLevel = 8
+		elif level == 2:
+			if time.time() - enemySpawnTime > 3 and enemiesLeftInLevel > 0:
+				enemySpawnTime = time.time()
+				enemiesLeftInLevel -= 1
+				spawnEnemy()
+			if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
+				level += 1
+				roundStartTime = time.time()
+				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
+				levelInProcess = False
+				enemiesLeftInLevel = 12
+		elif level == 3 and levelInProcess:
+			gameContinue = False
 
 	# check for user input
 	for event in pygame.event.get():
