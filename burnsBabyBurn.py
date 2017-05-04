@@ -23,9 +23,13 @@ green = (0, 255, 0)
 blue = (0, 0, 255)
 white = (255, 255, 255)
 black = (0, 0, 0)
-gameContinue = True
+yellow = (200, 200, 0)
+orange = (255, 165 ,0 )
 level = 1
 towerSelected = False
+colorlist = [green, blue, white, yellow, orange]
+filen = 'board.txt'
+ycords = [0.3, 0.4, 0.5, 0.6, 0.7]
 # Start up window
 pygame.init()
 pygame.display.set_caption("Tower Defense")
@@ -45,11 +49,18 @@ baseImg = pygame.image.load("base1.png")
 tower1Img = pygame.image.load("tower1.png")
 myFont = pygame.font.SysFont("Britannic Bold", 30)
 levelFont = pygame.font.SysFont("Britannic Bold", 60)
+namefont = pygame.font.SysFont("Britannic Bold", 25)
+nlabel= levelFont.render("Welcome to Tower Defense", 1, red)
+nlabelp = myFont.render("Play", 1, black)
+nlabellead = myFont.render("Leaders", 1, black)
 # Transformation
 backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
 towerBoardInstructions1 = myFont.render("Click and hold to select tower", 1, black)
 levelDisplay = levelFont.render("Level {}".format(level), 1, black)
+nameLabel = myFont.render("NAME", 1, red)
+scoreLabel = myFont.render("SCORE", 1, red)
+labelltom = myFont.render("Home", 1, black)
 woodenBackImg = pygame.transform.scale(woodenBackImg, (scrWidth, scrHeight / 6))
 woodenBackImgRect = woodenBackImg.get_rect()
 woodenBackImgRect.bottom = scrHeight
@@ -156,7 +167,7 @@ class Tank(pygame.sprite.Sprite):
 			self.velY = 0
 		elif self.rect.x > 112 and self.rect.x < 200 and self.rect.y > 140:
 			self.velX = 0
-			self.velY = -1	
+			self.velY = -1
 			if self.angle is not 90:
 				self.image = pygame.transform.rotate(self.image, 90)
 				self.angle = 90
@@ -276,24 +287,6 @@ instructions = pygame.sprite.Group()
 roundTimes = pygame.sprite.Group()
 
 
-#################
-# Initiate Game *
-#################
-bases.add(Base())
-
-money.add(myMoney)
-instructions.add(instruction)
-gameDisplay.blit(backgroundImg, backgroundImgRect)
-gameDisplay.blit(woodenBackImg, woodenBackImgRect)
-gameDisplay.blit(towerBoardInstructions1, (504, 470))
-gameDisplay.blit(tower1Img, tower1ImgRect)
-gameDisplay.blit(tower1Cost, (580, 580))
-gameDisplay.blit(levelDisplay, (14, 510))
-money.draw(gameDisplay)
-instructions.draw(gameDisplay)
-roundTimes.add(levelTime)
-
-
 #############
 # Functions #
 #############
@@ -324,112 +317,242 @@ def spawnEnemy():
 # Play Game #
 #############
 levelInProcess = False
-enemiesLeftInLevel = 5
-enemySpawnTime = time.time()
-roundStartTime = time.time()
-roundTimes.draw(gameDisplay)
-levelDisplayDuration = time.time()
+startcontinue = True
+leadercontinue = False
+quitcontinue = False
+maincontinue = False
+gameContinue = True
 while gameContinue:
-	clock.tick(FPS)
-	# update timer
-	if levelInProcess == False and time.time() - roundStartTime > 1:
-		roundTimes.update()
-		roundStartTime = time.time()
-		if levelTime.isTimeAtZero():
-			levelInProcess = True
-			roundTimes.clear(gameDisplay, backgroundImg)
-			instruction.dropInstructions("Level {} Started!".format(level))
-			levelDisplayDuration = time.time()
-			enemySpawnTime = time.time()
-
-	# spawn enemies based on level
-	if levelInProcess:
-		if len(instruction.instructionsToPrint) > 0 and instruction.instructionsToPrint[0] == "L" \
-			and time.time() - levelDisplayDuration > 4:
-			instruction.dropInstructions("")
-		if level == 1:
-			if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
-				enemySpawnTime = time.time()
-				enemiesLeftInLevel -= 1
-				spawnEnemy()
-			if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
-				level += 1
-				roundStartTime = time.time()
-				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
-				money.update()
-				levelInProcess = False
-				enemiesLeftInLevel = 8
-		elif level == 2:
-			if time.time() - enemySpawnTime > 3 and enemiesLeftInLevel > 0:
-				enemySpawnTime = time.time()
-				enemiesLeftInLevel -= 1
-				spawnEnemy()
-			if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
-				level += 1
-				roundStartTime = time.time()
-				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
-				levelInProcess = False
-				enemiesLeftInLevel = 12
-		elif level == 3 and levelInProcess:
-			gameContinue = False
-
-	# check for user input
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			gameContinue = False
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_q:
+	while startcontinue:
+		clock.tick(FPS)
+		gameDisplay.fill((0,0,0))
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+				startcontinue = False
+				leadercontinue = False
+				quitcontinue = False
+				maincontinue = False
 				gameContinue = False
-			if event.key == pygame.K_n:
-				spawnEnemy()
-			if event.key == pygame.K_d:
-				myMoney.decrementCash(200)
-				money.update()
-			if event.key == pygame.K_a:
-				myMoney.incrementCash(200)
-				money.update()
-		# select tower
-		if event.type == pygame.MOUSEBUTTONDOWN and towerSelected == False:
-				mousePosition = pygame.mouse.get_pos()
-				if tower1ImgRect.collidepoint(mousePosition) == True:
-					towerSelected = True
-					instruction.dropInstructions("Release to place")
-		# place tower
-		if event.type == pygame.MOUSEBUTTONUP and towerSelected:
-				mousePosition = pygame.mouse.get_pos()
-				if myMoney.cash >= 200 and checkBounds(mousePosition[0], mousePosition[1]):
-					towers.add(Tower(tower1Img, (mousePosition[0]-12, mousePosition[1]-65)))
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				pos = pygame.mouse.get_pos()
+				(pressed1,pressed2,pressed3) = pygame.mouse.get_pressed()
+				#check for leaderboard
+				if leaderbutton.collidepoint(pos) and pressed1 == 1:
+					startcontinue = False
+					leadercontinue = True
+					quitcontinue = False
+					maincontinue = False
+					gameContinue = True
+
+				#go to play
+				if playbutton.collidepoint(pos) and pressed1 == 1:
+					startcontinue = False
+					leadercontinue = False
+					quitcontinue = False
+					maincontinue = True
+					gameContinue = True
+
+		leaderbutton = pygame.draw.rect(gameDisplay, white, [scrWidth*0.32, scrHeight*0.6, scrWidth*0.15, scrHeight*0.075])
+		playbutton = pygame.draw.rect(gameDisplay, green, [scrWidth*0.52, scrHeight*0.6, scrWidth*0.15, scrHeight*0.075])
+		gameDisplay.blit(nlabel, (scrWidth*0.17, scrHeight*0.33))
+		gameDisplay.blit(nlabellead, (scrWidth*0.35, scrHeight*0.62))
+		gameDisplay.blit(nlabelp, (scrWidth*0.57, scrHeight*0.62))
+		pygame.display.flip()
+
+
+
+	if maincontinue:
+		#game set up, runs one time if maincontinue is hot
+		bases.add(Base())
+		money.add(myMoney)
+		instructions.add(instruction)
+		gameDisplay.blit(backgroundImg, backgroundImgRect)
+		gameDisplay.blit(woodenBackImg, woodenBackImgRect)
+		gameDisplay.blit(towerBoardInstructions1, (504, 470))
+		gameDisplay.blit(tower1Img, tower1ImgRect)
+		gameDisplay.blit(tower1Cost, (580, 580))
+		gameDisplay.blit(levelDisplay, (14, 510))
+		money.draw(gameDisplay)
+		instructions.draw(gameDisplay)
+		roundTimes.add(levelTime)
+		enemiesLeftInLevel = 5
+		enemySpawnTime = time.time()
+		roundStartTime = time.time()
+		roundTimes.draw(gameDisplay)
+		levelDisplayDuration = time.time()
+	while maincontinue:
+		clock.tick(FPS)
+		if levelInProcess == False and time.time() - roundStartTime > 1:
+			roundTimes.update()
+			roundStartTime = time.time()
+			if levelTime.isTimeAtZero():
+				levelInProcess = True
+				roundTimes.clear(gameDisplay, backgroundImg)
+				instruction.dropInstructions("Level {} Started!".format(level))
+				levelDisplayDuration = time.time()
+				enemySpawnTime = time.time()
+
+		# spawn enemies based on level
+		if levelInProcess:
+			if len(instruction.instructionsToPrint) > 0 and instruction.instructionsToPrint[0] == "L" \
+				and time.time() - levelDisplayDuration > 4:
+				instruction.dropInstructions("")
+			if level == 1:
+				if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
+					enemySpawnTime = time.time()
+					enemiesLeftInLevel -= 1
+					spawnEnemy()
+				if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
+					level += 1
+					roundStartTime = time.time()
+					levelDisplay = levelFont.render("Level {}".format(level), 1, black)
+					money.update()
+					levelInProcess = False
+					enemiesLeftInLevel = 8
+			elif level == 2:
+				if time.time() - enemySpawnTime > 3 and enemiesLeftInLevel > 0:
+					enemySpawnTime = time.time()
+					enemiesLeftInLevel -= 1
+					spawnEnemy()
+				if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
+					level += 1
+					roundStartTime = time.time()
+					levelDisplay = levelFont.render("Level {}".format(level), 1, black)
+					levelInProcess = False
+					enemiesLeftInLevel = 12
+			elif level == 3 and levelInProcess:
+				gameContinue = False
+
+
+
+		#check home base health #TODO
+
+
+		# check for user input
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				gameContinue = False
+				maincontinue = False
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_q:
+					gameContinue = False
+					maincontinue = False
+				if event.key == pygame.K_n:
+					spawnEnemy()
+				if event.key == pygame.K_d:
 					myMoney.decrementCash(200)
 					money.update()
-					money.draw(gameDisplay)
-					instruction.dropInstructions("")
-				elif not checkBounds(mousePosition[0], mousePosition[1]):
-					instruction.dropInstructions("Can't place there")
+				if event.key == pygame.K_a:
+					myMoney.incrementCash(200)
+					money.update()
+			# select tower
+			if event.type == pygame.MOUSEBUTTONDOWN and towerSelected == False:
+					mousePosition = pygame.mouse.get_pos()
+					if tower1ImgRect.collidepoint(mousePosition) == True:
+						towerSelected = True
+						instruction.dropInstructions("Release to place")
+			# place tower
+			if event.type == pygame.MOUSEBUTTONUP and towerSelected:
+					mousePosition = pygame.mouse.get_pos()
+					if myMoney.cash >= 200 and checkBounds(mousePosition[0], mousePosition[1]):
+						towers.add(Tower(tower1Img, (mousePosition[0]-12, mousePosition[1]-65)))
+						myMoney.decrementCash(200)
+						money.update()
+						money.draw(gameDisplay)
+						instruction.dropInstructions("")
+					elif not checkBounds(mousePosition[0], mousePosition[1]):
+						instruction.dropInstructions("Can't place there")
+					else:
+						instruction.dropInstructions("Out of cash")
+					towerSelected = False
+
+		# clear groups
+		enemies.clear(gameDisplay, backgroundImg)
+		bases.clear(gameDisplay, backgroundImg)
+		towers.clear(gameDisplay, backgroundImg)
+
+		# update groups
+		towers.update()
+		enemies.update()
+		bases.update()
+
+		# collision checks
+		if len(bases.sprites()) > 0:
+			collisionWithBase = pygame.sprite.spritecollideany(bases.sprites()[0], enemies)
+			if collisionWithBase != None:
+				bases.sprites()[0].damage(10)
+				collisionWithBase.hitBase()
+				if len(bases.sprites()) == 0:
+					gameContinue = False
+
+		# draw groups
+		enemies.draw(gameDisplay)
+		bases.draw(gameDisplay)
+		towers.draw(gameDisplay)
+		pygame.display.update()
+	while leadercontinue:
+		clock.tick(FPS)
+		#find if file exists, if not make one
+		if not os.path.isfile(filen): #create file
+			file = open(filen, "w+")
+			for i in range(5):
+				file.write("empty" + str(i) + ",0\n")
+			file.close()
+
+		file = open(filen, "r")
+
+		#Display Top 5 Names
+		scores = {}
+		for line in file:
+			name = line.split(",")[0].rstrip()
+			score = line.split(",")[1].rstrip()
+			scores[name] = score
+		file.close()
+		sortScore = sorted(scores, key=lambda x: int(scores[x]), reverse = True)
+		leader = True
+		while leader:
+			gameDisplay.fill(black)
+			gameDisplay.blit(nameLabel, (scrWidth*0.30, scrHeight*0.20))
+			gameDisplay.blit(scoreLabel, (scrWidth*0.55, scrHeight*0.20))
+			homebutton = pygame.draw.rect(gameDisplay, green, [scrWidth*0.40, scrHeight*0.8, scrWidth*0.15, scrHeight*0.075])
+			gameDisplay.blit(labelltom, (scrWidth*0.44, scrHeight*0.823))
+			for i,s in enumerate(sortScore):
+				if scores[s] == "0":
+					userLabel = namefont.render("XXX", 1, colorlist[i])
+					gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
+					scoreL = namefont.render(scores[s], 1, colorlist[i])
+					gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
 				else:
-					instruction.dropInstructions("Out of cash")
-				towerSelected = False
+					userLabel = namefont.render(s, 1, colorlist[i])
+					gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
+					scoreL = namefont.render(scores[s], 1, colorlist[i])
+					gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
 
-	# clear groups
-	enemies.clear(gameDisplay, backgroundImg)
-	bases.clear(gameDisplay, backgroundImg)
-	towers.clear(gameDisplay, backgroundImg)
 
-	# update groups
-	towers.update()
-	enemies.update()
-	bases.update()
+			pygame.display.flip()
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+					leader = False
+					startcontinue = False
+					leadercontinue = False
+					quitcontinue = False
+					maincontinue = False
+					gameContinue = False
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					pos = pygame.mouse.get_pos()
+					(pressed1,pressed2,pressed3) = pygame.mouse.get_pressed()
+					#go back to home screen
+					if homebutton.collidepoint(pos) and pressed1 == 1:
+						leader = False
+						startcontinue = True
+						leadercontinue = False
+						quitcontinue = False
+						maincontinue = False
+						gameContinue = True
 
-	# collision checks
-	if len(bases.sprites()) > 0:
-		collisionWithBase = pygame.sprite.spritecollideany(bases.sprites()[0], enemies)
-		if collisionWithBase != None:
-			bases.sprites()[0].damage(10)
-			collisionWithBase.hitBase()
-			if len(bases.sprites()) == 0:
-				gameContinue = False
 
-	# draw groups
-	enemies.draw(gameDisplay)
-	bases.draw(gameDisplay)
-	towers.draw(gameDisplay)
-	pygame.display.update()
+	while quitcontinue:
+		clock.tick(FPS)
+
+
+pygame.quit()

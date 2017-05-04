@@ -34,13 +34,10 @@ level1Map = pygame.transform.scale(level1Map, (scrWidth, scrHeight))
 level1MapRect = level1Map.get_rect()
 #text
 myfont = pygame.font.SysFont("Britannic Bold", 40)
-myfont2 = pygame.font.SysFont("Britannic Bold", 20)
 nlabel= myfont.render("Welcome to Tower Defense", 1, red)
 nlabelp = myfont.render("Play", 1, black)
 nlabellead = myfont.render("Leaders", 1, black)
-nlabeltower = myfont2.render("New Tower", 1, black)
-nlabeltowerc = myfont2.render("Cost: 200", 1, black)
-nlabelplay = myfont2.render("RUN", 1, black)
+
 
 def runAlongTrack(x,y):
 	speed = 10
