@@ -150,16 +150,17 @@ class Money(pygame.sprite.Sprite):
 
 
 class Tank(pygame.sprite.Sprite):
-	def __init__(self, image, tankType):
+	def __init__(self, image, tankType, initialHealth):
 		super(Tank, self).__init__()
 		self.image = image
+		self.initialHealth = initialHealth
 		self.rect = self.image.get_rect()
 		self.rect.x = 0
 		self.rect.y = 310
 		self.velX = 1
 		self.velY = 0
 		self.tankType = tankType
-		self.health = 100.0 / (self.tankType)
+		self.health = self.initialHealth / (self.tankType)
 		self.angle = 0
 	def update(self):
 		if self.rect.x < 110:
@@ -211,7 +212,7 @@ class Tank(pygame.sprite.Sprite):
 			self.kill()
 		else:
 			pygame.draw.line(gameDisplay, red, (self.rect.x, self.rect.y), \
-				(self.rect.x + self.health * .3 * self.tankType, self.rect.y), 2)
+				(self.rect.x + (self.health * 100 / self.initialHealth) * .3 * self.tankType, self.rect.y), 2)
 	def damage(self, hitNum):
 		self.health -= hitNum
 	def hitBase(self):
@@ -303,14 +304,14 @@ def checkBounds(xpos, ypos):
 		return False
 	return True
 
-def spawnEnemy():
+def spawnEnemy(initialHealth):
 	tankType = randint(1, 3)
 	if tankType == 1:
-		enemies.add(Tank(tank1Img, tankType))
+		enemies.add(Tank(tank1Img, tankType, initialHealth))
 	elif tankType == 2:
-		enemies.add(Tank(tank2Img, tankType))
+		enemies.add(Tank(tank2Img, tankType, initialHealth))
 	else:
-		enemies.add(Tank(tank3Img, tankType))
+		enemies.add(Tank(tank3Img, tankType, initialHealth))
 
 
 #############
@@ -376,6 +377,8 @@ while gameContinue:
 		instructions.draw(gameDisplay)
 		roundTimes.add(levelTime)
 		enemiesLeftInLevel = 5
+		enemiesPerLevel = 5
+		initialEnemyHealth = 100
 		enemySpawnTime = time.time()
 		roundStartTime = time.time()
 		roundTimes.draw(gameDisplay)
@@ -397,33 +400,20 @@ while gameContinue:
 			if len(instruction.instructionsToPrint) > 0 and instruction.instructionsToPrint[0] == "L" \
 				and time.time() - levelDisplayDuration > 4:
 				instruction.dropInstructions("")
-			if level == 1:
-				if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
-					enemySpawnTime = time.time()
-					enemiesLeftInLevel -= 1
-					spawnEnemy()
-				if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
-					level += 1
-					roundStartTime = time.time()
-					levelDisplay = levelFont.render("Level {}".format(level), 1, black)
-					money.update()
-					levelInProcess = False
-					enemiesLeftInLevel = 8
-			elif level == 2:
-				if time.time() - enemySpawnTime > 3 and enemiesLeftInLevel > 0:
-					enemySpawnTime = time.time()
-					enemiesLeftInLevel -= 1
-					spawnEnemy()
-				if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
-					level += 1
-					roundStartTime = time.time()
-					levelDisplay = levelFont.render("Level {}".format(level), 1, black)
-					levelInProcess = False
-					enemiesLeftInLevel = 12
-			elif level == 3 and levelInProcess:
-				gameContinue = False
-
-
+			if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
+				enemySpawnTime = time.time()
+				enemiesLeftInLevel -= 1
+				spawnEnemy(initialEnemyHealth)
+			if enemiesLeftInLevel == 0 and len(enemies.sprites()) == 0:
+				instruction.dropInstructions("Level {} Finished!".format(level))
+				level += 1
+				roundStartTime = time.time()
+				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
+				money.update()
+				initialEnemyHealth += 30
+				enemiesPerLevel += 3
+				levelInProcess = False
+				enemiesLeftInLevel = enemiesPerLevel
 
 		#check home base health #TODO
 
