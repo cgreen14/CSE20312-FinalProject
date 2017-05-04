@@ -40,6 +40,7 @@ gameDisplay = pygame.display.set_mode((scrWidth, scrHeight))
 # Images/Labels #
 #################
 # Images/Labels
+attackBallImg = pygame.image.load("attackBall.png")
 backgroundImg = pygame.image.load("level1Map.png")
 woodenBackImg = pygame.image.load("woodenback.png")
 tank1Img = pygame.image.load("tank1.png")
@@ -54,6 +55,7 @@ nlabel= levelFont.render("Welcome to Tower Defense", 1, red)
 nlabelp = myFont.render("Play", 1, black)
 nlabellead = myFont.render("Leaders", 1, black)
 # Transformation
+attackBallImg = pygame.transform.scale(attackBallImg, (attackBallImg.get_width() / 45, attackBallImg.get_height() / 45))
 backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
 towerBoardInstructions1 = myFont.render("Click and hold to select tower", 1, black)
@@ -96,14 +98,29 @@ attacks = pygame.sprite.Group()
 class singleBullet(pygame.sprite.Sprite):
 	def __init__(self, xPos, yPos, target):
 		super(singleBullet, self).__init__()
+		self.image = attackBallImg
 		self.xPos = xPos
 		self.yPos = yPos
-		self.rect = pygame.draw.circle(gameDisplay, blue, (self.xPos, self.yPos), 1)
+		self.rect = self.image.get_rect()
+		self.rect.x = self.xPos
+		self.rect.y = self.yPos
+		self.target = target
+		self.xVel = 7
+		self.yVel = 7
 	def update(self):
-		attacks.clear(gameDisplay, backgroundImg)
-		self.rect.x += 5
-		self.rect.y += 5
-		self.rect = pygame.draw.circle(gameDisplay, blue, (self.rect.x, self.rect.y), 1)
+		if math.fabs(self.rect.centerx - self.target.rect.centerx) < 5 and \
+			math.fabs(self.rect.centery - self.target.rect.centery) < 5:
+			self.target.damage(30)
+			attacks.clear(gameDisplay, backgroundImg)
+			self.kill()
+		if self.rect.centerx < self.target.rect.centerx:
+			self.rect.centerx += self.xVel
+		elif self.rect.centerx > self.target.rect.centerx:
+			self.rect.centerx -= self.xVel
+		if self.rect.centery < self.target.rect.centery:
+			self.rect.centery += self.yVel
+		elif self.rect.centery > self.target.rect.centery:
+			self.rect.centery -= self.yVel
 
 
 class TimeUntilRoundStarts(pygame.sprite.Sprite):
@@ -292,14 +309,14 @@ class Tower(pygame.sprite.Sprite):
 	def attackEnemy(self):
 		if self.target is not None:
 			attacks.add(singleBullet(self.rect.left, self.rect.bottom, self.target))
-			self.target.damage(10)
+			#self.target.damage(10)
 
 
 ######################
 # Initialize Classes #
 ######################
 instruction = Instructions()
-levelTime = TimeUntilRoundStarts(15)
+levelTime = TimeUntilRoundStarts(2)
 myMoney = Money()
 
 
