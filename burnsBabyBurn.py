@@ -48,6 +48,7 @@ tank2Img = pygame.image.load("tank2.png")
 tank3Img = pygame.image.load("tank3.png")
 baseImg = pygame.image.load("base1.png")
 tower1Img = pygame.image.load("tower1.png")
+tower3Img = pygame.image.load("tower3.png")
 myFont = pygame.font.SysFont("Britannic Bold", 30)
 levelFont = pygame.font.SysFont("Britannic Bold", 60)
 namefont = pygame.font.SysFont("Britannic Bold", 25)
@@ -74,10 +75,15 @@ tank3Img = pygame.transform.scale(tank3Img, (tank3Img.get_width() / 4, tank3Img.
 tank3Img = pygame.transform.rotate(tank3Img, -90)
 baseImg = pygame.transform.scale(baseImg, (baseImg.get_width() / 4, baseImg.get_height() / 4))
 tower1Img = pygame.transform.scale(tower1Img, (tower1Img.get_width() / 9, tower1Img.get_height() / 9))
+tower3Img = pygame.transform.scale(tower3Img, (tower3Img.get_width() / 2, tower3Img.get_height() / 2))
+tower3ImgRect = tower3Img.get_rect()
+tower3ImgRect.x = 655
+tower3ImgRect.y = 508
 tower1ImgRect = tower1Img.get_rect()
 tower1ImgRect.x = 590
-tower1ImgRect.y = 502
+tower1ImgRect.y = 510
 tower1Cost = myFont.render("$200", 1, black)
+tower3Cost = myFont.render("$500", 1, black)
 
 
 ##########
@@ -96,8 +102,9 @@ attacks = pygame.sprite.Group()
 # Classes #
 ###########
 class singleBullet(pygame.sprite.Sprite):
-	def __init__(self, xPos, yPos, target):
+	def __init__(self, xPos, yPos, target, bulletType):
 		super(singleBullet, self).__init__()
+		self.bulletType = bulletType
 		self.image = attackBallImg
 		self.xPos = xPos
 		self.yPos = yPos
@@ -110,7 +117,10 @@ class singleBullet(pygame.sprite.Sprite):
 	def update(self):
 		if math.fabs(self.rect.centerx - self.target.rect.centerx) < 5 and \
 			math.fabs(self.rect.centery - self.target.rect.centery) < 5:
-			self.target.damage(30)
+			if self.bulletType == 1:
+				self.target.damage(30)
+			else:
+				self.target.damage(80)
 			attacks.clear(gameDisplay, backgroundImg)
 			self.kill()
 		if self.rect.centerx < self.target.rect.centerx:
@@ -157,7 +167,9 @@ class Instructions(pygame.sprite.Sprite):
 		money.clear(gameDisplay, backgroundImg)
 		gameDisplay.blit(woodenBackImg, woodenBackImgRect)
 		gameDisplay.blit(tower1Img, tower1ImgRect)
-		gameDisplay.blit(tower1Cost, (580, 580))
+		gameDisplay.blit(tower3Img, tower3ImgRect)
+		gameDisplay.blit(tower1Cost, (622, 540))
+		gameDisplay.blit(tower3Cost, (730, 540))
 		gameDisplay.blit(levelDisplay, (14, 510))
 		self.image = self.myfont.render(self.instructionsToPrint, 1, black)
 		self.rect = self.image.get_rect()
@@ -180,7 +192,9 @@ class Money(pygame.sprite.Sprite):
 		money.clear(gameDisplay, backgroundImg)
 		gameDisplay.blit(woodenBackImg, woodenBackImgRect)
 		gameDisplay.blit(tower1Img, tower1ImgRect)
-		gameDisplay.blit(tower1Cost, (580, 580))
+		gameDisplay.blit(tower3Img, tower3ImgRect)
+		gameDisplay.blit(tower1Cost, (622, 540))
+		gameDisplay.blit(tower3Cost, (730, 540))
 		gameDisplay.blit(levelDisplay, (14, 510))
 		self.image = self.myfont.render("${}".format(str(self.cash)), 1, black)
 		instructions.draw(gameDisplay)
@@ -282,8 +296,9 @@ class Base(pygame.sprite.Sprite):
 
 
 class Tower(pygame.sprite.Sprite):
-	def __init__(self, image, (xpos, ypos)):
+	def __init__(self, image, (xpos, ypos), towerType):
 		super(Tower, self).__init__()
+		self.towerType = towerType
 		self.image = image
 		self.rect = self.image.get_rect()
 		self.rect.x = xpos
@@ -308,7 +323,7 @@ class Tower(pygame.sprite.Sprite):
 		self.closestTargetRange = 800
 	def attackEnemy(self):
 		if self.target is not None:
-			attacks.add(singleBullet(self.rect.left, self.rect.bottom, self.target))
+			attacks.add(singleBullet(self.rect.left, self.rect.bottom, self.target, self.towerType))
 			#self.target.damage(10)
 
 
@@ -316,7 +331,7 @@ class Tower(pygame.sprite.Sprite):
 # Initialize Classes #
 ######################
 instruction = Instructions()
-levelTime = TimeUntilRoundStarts(2)
+levelTime = TimeUntilRoundStarts(15)
 myMoney = Money()
 
 
@@ -403,7 +418,9 @@ while gameContinue:
 		gameDisplay.blit(woodenBackImg, woodenBackImgRect)
 		gameDisplay.blit(towerBoardInstructions1, (504, 470))
 		gameDisplay.blit(tower1Img, tower1ImgRect)
-		gameDisplay.blit(tower1Cost, (580, 580))
+		gameDisplay.blit(tower3Img, tower3ImgRect)
+		gameDisplay.blit(tower1Cost, (622, 540))
+		gameDisplay.blit(tower3Cost, (730, 540))
 		gameDisplay.blit(levelDisplay, (14, 510))
 		money.draw(gameDisplay)
 		instructions.draw(gameDisplay)
@@ -415,6 +432,7 @@ while gameContinue:
 		roundStartTime = time.time()
 		roundTimes.draw(gameDisplay)
 		levelDisplayDuration = time.time()
+		whichTower = 0
 	while maincontinue:
 		clock.tick(FPS)
 		if levelInProcess == False and time.time() - roundStartTime > 1:
@@ -432,7 +450,7 @@ while gameContinue:
 			if len(instruction.instructionsToPrint) > 0 and instruction.instructionsToPrint[0] == "L" \
 				and time.time() - levelDisplayDuration > 4:
 				instruction.dropInstructions("")
-			if time.time() - enemySpawnTime > 4 and enemiesLeftInLevel > 0:
+			if time.time() - enemySpawnTime > 1 and enemiesLeftInLevel > 0:
 				enemySpawnTime = time.time()
 				enemiesLeftInLevel -= 1
 				spawnEnemy(initialEnemyHealth)
@@ -442,13 +460,10 @@ while gameContinue:
 				roundStartTime = time.time()
 				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
 				money.update()
-				initialEnemyHealth += 30
+				initialEnemyHealth += 50
 				enemiesPerLevel += 3
 				levelInProcess = False
 				enemiesLeftInLevel = enemiesPerLevel
-
-		#check home base health #TODO
-
 
 		# check for user input
 		for event in pygame.event.get():
@@ -459,12 +474,10 @@ while gameContinue:
 				if event.key == pygame.K_q:
 					gameContinue = False
 					maincontinue = False
-				if event.key == pygame.K_n:
-					spawnEnemy()
-				if event.key == pygame.K_d:
+				if event.key == pygame.K_m:
 					myMoney.decrementCash(200)
 					money.update()
-				if event.key == pygame.K_a:
+				if event.key == pygame.K_z:
 					myMoney.incrementCash(200)
 					money.update()
 			# select tower
@@ -472,21 +485,34 @@ while gameContinue:
 					mousePosition = pygame.mouse.get_pos()
 					if tower1ImgRect.collidepoint(mousePosition) == True:
 						towerSelected = True
+						whichTower = 1
+						instruction.dropInstructions("Release to place")
+					if tower3ImgRect.collidepoint(mousePosition) == True:
+						towerSelected = True
+						whichTower = 3
 						instruction.dropInstructions("Release to place")
 			# place tower
 			if event.type == pygame.MOUSEBUTTONUP and towerSelected:
 					mousePosition = pygame.mouse.get_pos()
-					if myMoney.cash >= 200 and checkBounds(mousePosition[0], mousePosition[1]):
-						towers.add(Tower(tower1Img, (mousePosition[0]-12, mousePosition[1]-65)))
-						myMoney.decrementCash(200)
-						money.update()
-						money.draw(gameDisplay)
-						instruction.dropInstructions("")
+					if checkBounds(mousePosition[0], mousePosition[1]):
+						if whichTower == 1 and myMoney.cash >= 200:
+							towers.add(Tower(tower1Img, (mousePosition[0]-12, mousePosition[1]-65), 1))
+							myMoney.decrementCash(200)
+							money.update()
+							money.draw(gameDisplay)
+							instruction.dropInstructions("")
+						elif whichTower == 3 and myMoney.cash >= 500:
+							towers.add(Tower(tower3Img, (mousePosition[0]-50, mousePosition[1]-70), 3))
+							myMoney.decrementCash(500)
+							money.update()
+							money.draw(gameDisplay)
+
 					elif not checkBounds(mousePosition[0], mousePosition[1]):
 						instruction.dropInstructions("Can't place there")
 					else:
 						instruction.dropInstructions("Out of cash")
 					towerSelected = False
+					whichTower = 0
 
 		# clear groups
 		attacks.clear(gameDisplay, backgroundImg)
@@ -508,6 +534,7 @@ while gameContinue:
 				collisionWithBase.hitBase()
 				if len(bases.sprites()) == 0:
 					gameContinue = False
+					maincontinue = False
 
 		# draw groups
 		attacks.draw(gameDisplay)
