@@ -15,6 +15,7 @@ from random import randint
 # Initialize Variables #
 ########################
 # Variables
+fromleader = 0
 scrWidth = 800
 scrHeight = 600
 FPS = 30
@@ -61,9 +62,10 @@ backgroundImg = pygame.transform.scale(backgroundImg, (scrWidth, scrHeight))
 backgroundImgRect = backgroundImg.get_rect()
 towerBoardInstructions1 = myFont.render("Click and hold to select tower", 1, black)
 levelDisplay = levelFont.render("Level {}".format(level), 1, black)
-nameLabel = myFont.render("NAME", 1, red)
-scoreLabel = myFont.render("SCORE", 1, red)
+nameLabel = myFont.render("User Number", 1, red)
+scoreLabel = myFont.render("Max Level", 1, red)
 labelltom = myFont.render("Home", 1, black)
+exitLabel = myFont.render("GAME OVER", 1, white)
 woodenBackImg = pygame.transform.scale(woodenBackImg, (scrWidth, scrHeight / 6))
 woodenBackImgRect = woodenBackImg.get_rect()
 woodenBackImgRect.bottom = scrHeight
@@ -360,7 +362,6 @@ def spawnEnemy(initialHealth):
 	else:
 		enemies.add(Tank(tank3Img, tankType, initialHealth))
 
-
 #############
 # Play Game #
 #############
@@ -370,12 +371,24 @@ leadercontinue = False
 quitcontinue = False
 maincontinue = False
 gameContinue = True
+#######################
+# Set Up Leaderboarrd #
+#######################
+if not os.path.isfile(filen): #create file
+	file = open(filen, "w+")
+	for i in range(5):
+		file.write("empty" + str(i) + ",0\n")
+	file.close()
+file = open(filen, "r")
+usernumber = 0
+for line in file:
+	usernumber+=1
 while gameContinue:
 	while startcontinue:
 		clock.tick(FPS)
 		gameDisplay.fill((0,0,0))
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+			if event.type == pygame.QUIT or ( event.type == pygame.KEYDOWN and event.key == pygame.K_q ):
 				startcontinue = False
 				leadercontinue = False
 				quitcontinue = False
@@ -405,9 +418,9 @@ while gameContinue:
 		gameDisplay.blit(nlabel, (scrWidth*0.17, scrHeight*0.33))
 		gameDisplay.blit(nlabellead, (scrWidth*0.35, scrHeight*0.62))
 		gameDisplay.blit(nlabelp, (scrWidth*0.57, scrHeight*0.62))
+		instuctionLabel = myFont.render("Player Number: " + str(usernumber - 4), 1, white)
+		gameDisplay.blit(instuctionLabel, (scrWidth*0.385, scrHeight*0.5))
 		pygame.display.flip()
-
-
 
 	if maincontinue:
 		#game set up, runs one time if maincontinue is hot
@@ -472,8 +485,11 @@ while gameContinue:
 				maincontinue = False
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_q:
-					gameContinue = False
+					startcontinue = False
+					leadercontinue = False
+					quitcontinue = True
 					maincontinue = False
+					gameContinue = False
 				if event.key == pygame.K_m:
 					myMoney.decrementCash(200)
 					money.update()
@@ -494,19 +510,18 @@ while gameContinue:
 			# place tower
 			if event.type == pygame.MOUSEBUTTONUP and towerSelected:
 					mousePosition = pygame.mouse.get_pos()
-					if checkBounds(mousePosition[0], mousePosition[1]):
-						if whichTower == 1 and myMoney.cash >= 200:
-							towers.add(Tower(tower1Img, (mousePosition[0]-12, mousePosition[1]-65), 1))
-							myMoney.decrementCash(200)
-							money.update()
-							money.draw(gameDisplay)
-							instruction.dropInstructions("")
-						elif whichTower == 3 and myMoney.cash >= 500:
-							towers.add(Tower(tower3Img, (mousePosition[0]-50, mousePosition[1]-70), 3))
-							myMoney.decrementCash(500)
-							money.update()
-							money.draw(gameDisplay)
-
+					if checkBounds(mousePosition[0], mousePosition[1]) and whichTower == 1 and myMoney.cash >= 200:
+						towers.add(Tower(tower1Img, (mousePosition[0]-12, mousePosition[1]-65), 1))
+						myMoney.decrementCash(200)
+						money.update()
+						money.draw(gameDisplay)
+						instruction.dropInstructions("")
+					elif checkBounds(mousePosition[0], mousePosition[1]) and whichTower == 3 and myMoney.cash >= 500:
+						towers.add(Tower(tower3Img, (mousePosition[0]-50, mousePosition[1]-70), 3))
+						myMoney.decrementCash(500)
+						money.update()
+						money.draw(gameDisplay)
+						instruction.dropInstructions("")
 					elif not checkBounds(mousePosition[0], mousePosition[1]):
 						instruction.dropInstructions("Can't place there")
 					else:
@@ -533,8 +548,11 @@ while gameContinue:
 				bases.sprites()[0].damage(10)
 				collisionWithBase.hitBase()
 				if len(bases.sprites()) == 0:
-					gameContinue = False
+					startcontinue = False
+					leadercontinue = False
+					quitcontinue = True
 					maincontinue = False
+					gameContinue = False
 
 		# draw groups
 		attacks.draw(gameDisplay)
@@ -569,16 +587,17 @@ while gameContinue:
 			homebutton = pygame.draw.rect(gameDisplay, green, [scrWidth*0.40, scrHeight*0.8, scrWidth*0.15, scrHeight*0.075])
 			gameDisplay.blit(labelltom, (scrWidth*0.44, scrHeight*0.823))
 			for i,s in enumerate(sortScore):
-				if scores[s] == "0":
-					userLabel = namefont.render("XXX", 1, colorlist[i])
-					gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
-					scoreL = namefont.render(scores[s], 1, colorlist[i])
-					gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
-				else:
-					userLabel = namefont.render(s, 1, colorlist[i])
-					gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
-					scoreL = namefont.render(scores[s], 1, colorlist[i])
-					gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
+				if i < 5:
+					if scores[s] == "0":
+						userLabel = namefont.render("XXX", 1, colorlist[i])
+						gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
+						scoreL = namefont.render(scores[s], 1, colorlist[i])
+						gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
+					else:
+						userLabel = namefont.render(s, 1, colorlist[i])
+						gameDisplay.blit(userLabel, (scrWidth*0.31, scrHeight*ycords[i]))
+						scoreL = namefont.render(scores[s], 1, colorlist[i])
+						gameDisplay.blit(scoreL, (scrWidth*0.56, scrHeight*ycords[i]))
 
 
 			pygame.display.flip()
@@ -602,9 +621,48 @@ while gameContinue:
 						maincontinue = False
 						gameContinue = True
 
-
+	quitloop = 0
 	while quitcontinue:
 		clock.tick(FPS)
+		if not os.path.isfile(filen): #create file
+			file = open(filen, "w+")
+			for i in range(5):
+				file.write("empty" + str(i) + ",0\n")
+			file.close()
+		if quitloop == 0:
+			file = open(filen, "a")
+			file.write(str(usernumber - 4)+","+str(level)+"\n")
+			file.close()
+			quitloop = 1
+		exitshow = True
+		scoreLabel = myFont.render("You Reached Round: " + str(level), 1, green)
+		quitLabel = myFont.render("QUIT", 1, white)
+		while exitshow:
+			gameDisplay.fill(black)
+			gameDisplay.blit(exitLabel, (scrWidth*0.43, scrHeight*0.20))
+			gameDisplay.blit(scoreLabel, (scrWidth*0.38, scrHeight*0.50))
+			quitbutton = pygame.draw.rect(gameDisplay, red, [scrWidth*0.44, scrHeight*0.8, scrWidth*0.15, scrHeight*0.075])
+			gameDisplay.blit(quitLabel, (scrWidth*0.485, scrHeight*0.823))
+			pygame.display.flip()
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+					exitshow = False
+					startcontinue = False
+					leadercontinue = False
+					quitcontinue = False
+					maincontinue = False
+					gameContinue = False
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					pos = pygame.mouse.get_pos()
+					(pressed1,pressed2,pressed3) = pygame.mouse.get_pressed()
+					#go back to home screen
+					if quitbutton.collidepoint(pos) and pressed1 == 1:
+						exitshow = False
+						startcontinue = False
+						leadercontinue = False
+						quitcontinue = False
+						maincontinue = False
+						gameContinue = False
 
 
 pygame.quit()
