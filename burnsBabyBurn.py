@@ -78,9 +78,34 @@ tower1ImgRect.y = 502
 tower1Cost = myFont.render("$200", 1, black)
 
 
+##########
+# Groups #
+##########
+enemies = pygame.sprite.Group()
+bases = pygame.sprite.Group()
+towers = pygame.sprite.Group()
+money = pygame.sprite.Group()
+instructions = pygame.sprite.Group()
+roundTimes = pygame.sprite.Group()
+attacks = pygame.sprite.Group()
+
+
 ###########
 # Classes #
 ###########
+class singleBullet(pygame.sprite.Sprite):
+	def __init__(self, xPos, yPos, target):
+		super(singleBullet, self).__init__()
+		self.xPos = xPos
+		self.yPos = yPos
+		self.rect = pygame.draw.circle(gameDisplay, blue, (self.xPos, self.yPos), 1)
+	def update(self):
+		attacks.clear(gameDisplay, backgroundImg)
+		self.rect.x += 5
+		self.rect.y += 5
+		self.rect = pygame.draw.circle(gameDisplay, blue, (self.rect.x, self.rect.y), 1)
+
+
 class TimeUntilRoundStarts(pygame.sprite.Sprite):
 	def __init__(self, initialTime):
 		super(TimeUntilRoundStarts, self).__init__()
@@ -253,7 +278,7 @@ class Tower(pygame.sprite.Sprite):
 	def update(self):
 		if self.target is None: self.coolDown = time.time()
 		self.spotEnemy()
-		if time.time() - self.coolDown > .5:
+		if time.time() - self.coolDown > 1:
 			self.coolDown = time.time()
 			self.attackEnemy()
 	def spotEnemy(self):
@@ -266,6 +291,7 @@ class Tower(pygame.sprite.Sprite):
 		self.closestTargetRange = 800
 	def attackEnemy(self):
 		if self.target is not None:
+			attacks.add(singleBullet(self.rect.left, self.rect.bottom, self.target))
 			self.target.damage(10)
 
 
@@ -275,17 +301,6 @@ class Tower(pygame.sprite.Sprite):
 instruction = Instructions()
 levelTime = TimeUntilRoundStarts(15)
 myMoney = Money()
-
-
-##########
-# Groups #
-##########
-enemies = pygame.sprite.Group()
-bases = pygame.sprite.Group()
-towers = pygame.sprite.Group()
-money = pygame.sprite.Group()
-instructions = pygame.sprite.Group()
-roundTimes = pygame.sprite.Group()
 
 
 #############
@@ -457,11 +472,13 @@ while gameContinue:
 					towerSelected = False
 
 		# clear groups
+		attacks.clear(gameDisplay, backgroundImg)
 		enemies.clear(gameDisplay, backgroundImg)
 		bases.clear(gameDisplay, backgroundImg)
 		towers.clear(gameDisplay, backgroundImg)
 
 		# update groups
+		attacks.update()
 		towers.update()
 		enemies.update()
 		bases.update()
@@ -476,6 +493,7 @@ while gameContinue:
 					gameContinue = False
 
 		# draw groups
+		attacks.draw(gameDisplay)
 		enemies.draw(gameDisplay)
 		bases.draw(gameDisplay)
 		towers.draw(gameDisplay)
