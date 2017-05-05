@@ -575,7 +575,8 @@ while gameContinue:
 		scores = {}
 		for line in file:
 			name = line.split(",")[0].rstrip()
-			score = line.split(",")[1].rstrip()
+			if len(line.split(",")) > 1:
+				score = line.split(",")[1].rstrip()
 			scores[name] = score
 		file.close()
 		sortScore = sorted(scores, key=lambda x: int(scores[x]), reverse = True)
