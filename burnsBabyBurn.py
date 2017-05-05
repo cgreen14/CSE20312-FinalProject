@@ -120,9 +120,9 @@ class singleBullet(pygame.sprite.Sprite):
 		if math.fabs(self.rect.centerx - self.target.rect.centerx) < 5 and \
 			math.fabs(self.rect.centery - self.target.rect.centery) < 5:
 			if self.bulletType == 1:
-				self.target.damage(30)
+				self.target.damage(20)
 			else:
-				self.target.damage(80)
+				self.target.damage(50)
 			attacks.clear(gameDisplay, backgroundImg)
 			self.kill()
 		if self.rect.centerx < self.target.rect.centerx:
@@ -326,7 +326,6 @@ class Tower(pygame.sprite.Sprite):
 	def attackEnemy(self):
 		if self.target is not None:
 			attacks.add(singleBullet(self.rect.left, self.rect.bottom, self.target, self.towerType))
-			#self.target.damage(10)
 
 
 ######################
@@ -473,7 +472,7 @@ while gameContinue:
 				roundStartTime = time.time()
 				levelDisplay = levelFont.render("Level {}".format(level), 1, black)
 				money.update()
-				initialEnemyHealth += 50
+				initialEnemyHealth += 70
 				enemiesPerLevel += 3
 				levelInProcess = False
 				enemiesLeftInLevel = enemiesPerLevel
